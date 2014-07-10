@@ -3,6 +3,7 @@ module Shannon
 export KL
 
 function KL(p::Vector{Float64}, q::Vector{Float64})
+  @assert (length(p) == length(q)) "Size mismatch"
   r = 0
   for i=1:length(p)
     if p[i] != 0 && q[i] != 0
