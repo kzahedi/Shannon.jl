@@ -34,6 +34,10 @@ r = [1, 1 + 2 * 4^1, 1 + 2*4^1 + 3*4^2, 1 + 2*4^1 + 3*4^2 + 4*4^3]
 
 @test r    == combine_binned_matrix(c)
 
+@test 0        == entropy([1,1,1,1,1])
+@test abs(log(2,6) - entropy([1,2,3,4,5,6])) < 0.0000001
+@test abs(log(4,6) - entropy([1,2,3,4,5,6], base=4)) < 0.0000001
+
 #= println(v) =#
 #= vb = bin_matrix(v, -1.0, 1.0, 10) =#
 #= cb = combine_binned_matrix(vb) =#

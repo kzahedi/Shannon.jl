@@ -1,6 +1,8 @@
 module Shannon
 
-export KL, MI
+using StatsBase
+
+export KL, MI, entropy
 export bin_value, bin_vector, bin_matrix
 export combine_binned_vector, combine_binned_matrix
 export relabel
@@ -32,6 +34,26 @@ function MI(data::Vector{Int64})
       end
     end
   end
+  r
+end
+
+function entropy(data::Vector{Int64}; base=2, mode="emperical")
+  @assert mode == "emperical" "Mode may be any of the follwing: [\"emperical\"]2"
+
+  p = []
+
+  if mode == "emperical"
+    p = fe1p(data)
+  end
+
+  r = 0
+
+  for x=1:size(p)[1]
+    if p[x] > 0.0
+      r = r - (p[x] * log(base, p[x]))
+    end
+  end
+
   r
 end
 
@@ -75,7 +97,7 @@ end
 relabel(v::Vector{Int64}) = indexin(v, unique(v))
 fe1ph(v::Vector{Int64})   = hist(v)[2] ./ size(v)[1]
 
-function fe2p(v::Matrix{Int64}) # frequency estimation of one dimensional probability 
+function fe2p(v::Matrix{Int64}) # frequency estimation of one dimensional probability
   m1 = maximum(v[:,1])
   m2 = maximum(v[:,2])
   r  = counts(v[:,1], v[:,2], (1:m1, 1:m2))
@@ -86,10 +108,10 @@ function fe2p(v::Matrix{Int64}) # frequency estimation of one dimensional probab
   r ./ s
 end
 
-# frequency estimation of one dimensional probability 
+# frequency estimation of one dimensional probability
 function fe1p(v::Vector{Int64})
   m = maximum(v)
-  l  = length(v)
+  l  = size(v)[1]
   r  = counts(v, 1:m)
   r = r ./ l
   # just to get rid of the numerical inaccuracies and make sure its a probability distribution
