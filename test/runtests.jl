@@ -34,11 +34,17 @@ r = [1, 1 + 2 * 4^1, 1 + 2*4^1 + 3*4^2, 1 + 2*4^1 + 3*4^2 + 4*4^3]
 
 @test r    == combine_binned_matrix(c)
 
-@test 0        == entropy([1,1,1,1,1])
+@test 0           == entropy([1,1,1,1,1])
 @test abs(log(2,6) - entropy([1,2,3,4,5,6])) < 0.0000001
 @test abs(log(4,6) - entropy([1,2,3,4,5,6], base=4)) < 0.0000001
 
-#= println(v) =#
-#= vb = bin_matrix(v, -1.0, 1.0, 10) =#
-#= cb = combine_binned_matrix(vb) =#
-#= println(cb) =#
+@test abs(5.540741 - entropy([1,2,3,4,5,6], mode="ChaoShen")) < 0.00001
+@test abs(5.540741 - entropy([1,2,3,4,5,6], mode="ChaoShen", base=2)) < 0.00001
+@test abs(1.667929 - entropy([1,2,3,4,5,6], mode="ChaoShen", base=10)) < 0.00001
+@test abs(3.840549 - entropy([1,2,3,4,5,6], mode="ChaoShen", base=e)) < 0.00001
+
+@test abs(1.632631 - entropy([1,2,2,3,3,3,4,4,4,4,5,6], mode="Dirichlet", pseudocount=0,base=e)) < 0.00001
+@test abs(2.355389 - entropy([1,2,2,3,3,3,4,4,4,4,5,6], mode="Dirichlet", pseudocount=0)) < 0.00001
+
+println(entropy([1,2,3,4,5,6], mode="MillerMadow", base=e))
+@test abs(2.208426 - entropy([1,2,3,4,5,6], mode="MillerMadow", base=e)) < 0.00001

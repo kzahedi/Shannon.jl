@@ -1,12 +1,15 @@
 module Shannon
 
+# The entropy functions (ChaoShen, Dirichlet, MillerMadow) were copied from the
+# R package "entropy", by Jean Hausser and Korbinian Strimmer. For details, see
+# http://cran.r-project.org/web/packages/entropy/index.html
+
 using StatsBase
 
-export KL, MI, entropy
+export KL, PI, MI, entropy
 export bin_value, bin_vector, bin_matrix
 export combine_binned_vector, combine_binned_matrix
 export relabel
-export fe1p, fe1ph, fe2p
 
 function KL(p::Vector{Float64}, q::Vector{Float64})
   @assert (length(p) == length(q)) "Size mismatch"
@@ -19,8 +22,8 @@ function KL(p::Vector{Float64}, q::Vector{Float64})
   r
 end
 
-# mutual information
-function MI(data::Vector{Int64})
+# predictive information
+function PI(data::Vector{Int64})
   max = maximum(data)
   px  = fe1p(data[1:end-1])
   py  = fe1p(data[2:end])
@@ -29,7 +32,8 @@ function MI(data::Vector{Int64})
   r = 0
   for x=1:length(px)
     for y=1:length(py)
-      if abs(px[x]) > 0.00000000001 && abs(py[y]) > 0.00000000001 && abs(pxy[x,y]) > 0.00000000001
+      if abs(px[x]) > 0.00000000001 && abs(py[y]) > 0.00000000001 &&
+        abs(pxy[x,y]) > 0.00000000001
         r = r + pxy[x,y] * (log2(pxy[x,y]) - log2(px[x]*py[y]))
       end
     end
@@ -37,23 +41,81 @@ function MI(data::Vector{Int64})
   r
 end
 
-function entropy(data::Vector{Int64}; base=2, mode="emperical")
-  @assert mode == "emperical" "Mode may be any of the follwing: [\"emperical\"]2"
+# mutual information
+function MI(data::Matrix{Int64})
+  max = maximum(data)
+  px  = fe1p(data[:,1])
+  py  = fe1p(data[:,2])
+  pxy = fe2p(hcat(data[:,[1:2]]))
+
+  r = 0
+  for x=1:length(px)
+    for y=1:length(py)
+      if abs(px[x]) > 0.00000000001 && abs(py[y]) > 0.00000000001 &&
+        abs(pxy[x,y]) > 0.00000000001:e
+        r = r + pxy[x,y] * (log2(pxy[x,y]) - log2(px[x]*py[y]))
+      end
+    end
+  end
+  r
+end
+
+entropy_emperical(p::Vector{Float64}, base::Number) = sum([ p[x] > 0 ? (-p[x] * log(base, p[x])) : 0 for x=1:size(p)[1]])
+
+function entropy_chaoshen(data::Vector{Int64}, base::Number)
+  c = counts(data, 1:maximum(data))
+  n = sum(c)
+  p = c ./ n
+  s = sum(p)
+  p = p ./ s # to be sure
+
+  # code copied form R entropy package
+  f1 = sum([i == 1? 1 : 0 for i in c]) # number of singletons
+  if (f1 == n)
+    f1 = n-1                # avoid C=0
+  end
+
+  C  = 1 - f1/n              # estimated coverage
+  pa = C .* p                # coverage adjusted empirical frequencies
+  la = (1-(1-pa).^n)         # probability to see a bin (species) in the sample
+  -sum(pa.*log(base, pa)./la) # Chao-Shen (2003) entropy estimatojr
+end
+
+function entropy_millermadow(data::Vector{Int64}, base::Number)
+  c = counts(data, 1:maximum(data))
+  n = sum(c)                         # total number of counts
+  m = sum([i > 0? 1 : 0 for i in c]) # number of bins with non-zero counts
+  p = c ./ n
+  s = sum(p)
+  p = p ./ s
+
+  # bias-corrected empirical estimate
+  entropy_emperical(p, base) + (m-1)/(2*n)
+end
+
+function entropy(data::Vector{Int64}; base=2, mode="emperical", pseudocount=0)
+  known_mode = (mode == "emperical" ||
+                mode == "ChaoShen"  ||
+                mode == "Dirichlet" ||
+                mode == "MillerMadow")
+  @assert known_mode "Mode may be any of the following: [\"emperical\", \"ChaoShen\", \"Dirichlet\", \"MillerMadow\"]"
 
   p = []
 
-  if mode == "emperical"
+  r = nothing
+
+  if     mode == "emperical"
     p = fe1p(data)
+    r = entropy_emperical(p, base) 
+  elseif mode == "ChaoShen"
+    r = entropy_chaoshen(data, base)
+  elseif mode == "Dirichlet"
+    p = fe1pd(data, pseudocount)
+    r = entropy_emperical(p, base)
+  elseif mode == "MillerMadow"
+    r = entropy_millermadow(data, base)
+  #= else =# # Not needed. Caught by assertion
   end
-
-  r = 0
-
-  for x=1:size(p)[1]
-    if p[x] > 0.0
-      r = r - (p[x] * log(base, p[x]))
-    end
-  end
-
   r
 end
 
@@ -116,6 +178,15 @@ function fe1p(v::Vector{Int64})
   r = r ./ l
   # just to get rid of the numerical inaccuracies and make sure its a probability distribution
   s = sum(r)
+  r ./ s
+end
+
+function fe1pd(v::Vector{Int64}, d::Number) # Dirichlet
+  r = counts(v, 1:maximum(v))
+  r = r .+ d
+  l = sum(r)
+  r = r ./ l
+  s = sum(r) # just to be sure
   r ./ s
 end
 
