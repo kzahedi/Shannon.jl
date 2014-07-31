@@ -17,7 +17,7 @@ function KL(p::Vector{Float64}, q::Vector{Float64}; base=2)
 end
 
 # predictive information
-PI(data::Vector{Int64}; base=2, mode="emperical") = MI(data[1:end-1], data[2:end], base, mode)
+PI(data::Vector{Int64}; base=2, mode="emperical") = MI(hcat(data[1:end-1], data[2:end]), base, mode)
 
 # mutual information
 function MI(data::Matrix{Int64}; base=2, mode="emperical", pseudocount=0)
