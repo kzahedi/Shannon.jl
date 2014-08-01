@@ -13,7 +13,7 @@ A collection of quantifications related to Shannon's information theory and meth
 
 A faster way is to call 
 
-    uniary_of_matrix(xy, -1.0, 1.0, 10)
+    unary_of_matrix(xy, -1.0, 1.0, 10)
    
 which is a short cut for the lines below
 
