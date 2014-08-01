@@ -10,6 +10,16 @@ A collection of quantifications related to Shannon's information theory and meth
     c=relabel(c) # remove unused bin from the data vector
     H = entropy(c)
     I = MI(bxy)
+
+A faster way is to call 
+
+    uniary_of_matrix(xy, -1.0, 1.0, 10)
+   
+which is a short cut for the lines below
+
+    bxy = bin_matrix(xy, -1.0, 1.0, 10)
+    c=combine_binned_matrix(bxy)
+    c=relabel(c) # remove unused bin from the data vector
     
 ## Entropy estimators
 The estimators were taken from Jean Hausser's and Korbinian Strimmer's R package _entropy_. For more information about their work, please have a look [here](http://cran.r-project.org/web/packages/entropy/index.html).
