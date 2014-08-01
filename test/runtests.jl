@@ -46,5 +46,4 @@ r = [1, 1 + 2 * 4^1, 1 + 2*4^1 + 3*4^2, 1 + 2*4^1 + 3*4^2 + 4*4^3]
 @test abs(1.632631 - entropy([1,2,2,3,3,3,4,4,4,4,5,6], mode="Dirichlet", pseudocount=0,base=e)) < 0.00001
 @test abs(2.355389 - entropy([1,2,2,3,3,3,4,4,4,4,5,6], mode="Dirichlet", pseudocount=0)) < 0.00001
 
-println(entropy([1,2,3,4,5,6], mode="MillerMadow", base=e))
 @test abs(2.208426 - entropy([1,2,3,4,5,6], mode="MillerMadow", base=e)) < 0.00001
