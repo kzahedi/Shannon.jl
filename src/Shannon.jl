@@ -10,6 +10,7 @@ export KL, PI, MI, entropy
 export bin_vector, bin_matrix
 export combine_binned_matrix, combine_binned_vector
 export combine_and_relabel_binned_matrix
+export uniary_of_matrix
 export relabel
 
 function KL(p::Vector{Float64}, q::Vector{Float64}; base=2)
@@ -138,6 +139,8 @@ end
 relabel(v::Vector{Int64}) = indexin(v, unique(v))
 
 combine_and_relabel_binned_matrix(data::Matrix{Int64}) = relabel(combine_binned_matrix(data))
+
+uniary_of_matrix(data::Matrix{Float64}, min::Float64, max::Float64, bins::Int64) = combine_and_relabel_binned_matrix(bin_matrix(data, min, max, bins))
 
 fe1ph(v::Vector{Int64})   = hist(v)[2] ./ size(v)[1]
 
