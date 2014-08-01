@@ -1,4 +1,4 @@
-# Shannon
+# Shannon.jl
 A collection of quantifications related to Shannon's information theory and methods to discretise data.
 
 ### Example
@@ -19,8 +19,8 @@ The estimators were taken from Jean Hausser's and Korbinian Strimmer's R package
     entropy(x,mode="Dirichlet", pseudocount=10)
     entropy(x,mode="MillerMadow")
 
-_x_ is a of type *Vector{Int64}*
-	
+**x** is a of type *Vector{Int64}*
+
 ### Setting the base
 
     entropy(x,base=2) [ this is the default ]
@@ -32,7 +32,7 @@ Currently, the _emperical_ estimator is implemented, but different bases can be 
     MI(xy, base=2) [ this is the default ]
     MI(xy, base=10)
 
-_xy_ is a two-dimensional matrix with _n_ rows and two columns.
+**xy** is a two-dimensional matrix with **n** rows and two columns.
 
 ## Predictive Information
 This in an implementation of the one-step predictive information, which is given by the mutual information of consecutive data points. If x is the data vector, then:
@@ -45,7 +45,7 @@ This function calculates the KL-Divergence on two probability distributions, and
 
     KL(p,q)=  sum([(p[i] != 0 && q[i] != 0)? p[i] * log(base, p[i]/q[i]) : 0 for i=1:length(p)])
 
-_p,q_ must be valid probability distributions, i.e.
+**p**,**q** must be valid probability distributions, i.e.
 
     x >= 0 for x in p
     y >= 0 for y in q
