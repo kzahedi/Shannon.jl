@@ -13,15 +13,13 @@ export combine_and_relabel_binned_matrix
 export unary_of_matrix
 export relabel
 
-"unary"
-
 function KL(p::Vector{Float64}, q::Vector{Float64}; base=2)
   @assert (length(p) == length(q)) "Size mismatch"
   sum([ (p[i] != 0 && q[i] != 0)? p[i] * log(base, p[i]/q[i]) : 0 for i=1:length(p)])
 end
 
 # predictive information
-PI(data::Vector{Int64}; base=2, mode="emperical") = MI(hcat(data[1:end-1], data[2:end]), base, mode)
+PI(data::Vector{Int64}; base=2, mode="emperical") = MI(hcat(data[1:end-1], data[2:end]), base=base, mode=mode)
 
 # mutual information
 function MI(data::Matrix{Int64}; base=2, mode="emperical", pseudocount=0)
