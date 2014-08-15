@@ -58,7 +58,14 @@ function entropy_chaoshen(data::Vector{Int64}, base::Number)
   C  = 1 - f1/n              # estimated coverage
   pa = C .* p                # coverage adjusted empirical frequencies
   la = (1-(1-pa).^n)         # probability to see a bin (species) in the sample
-  -sum(pa.*log(base, pa)./la) # Chao-Shen (2003) entropy estimatojr
+  #= -sum(pa.*log(base, pa)./la) # Chao-Shen (2003) entropy estimator =#
+  r = 0
+  for i=1:length(pa)
+    if pa[i] != 0
+      r -= pa[i] * log(base, pa[i]) / la[i]
+    end
+  end
+  r
 end
 
 function entropy_millermadow(data::Vector{Int64}, base::Number)
