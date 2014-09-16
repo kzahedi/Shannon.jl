@@ -7,7 +7,7 @@ module Shannon
 using StatsBase
 
 export KL, PI, MI, entropy
-export bin_vector, bin_matrix
+export bin_vector, bin_matrix, bin_value
 export combine_binned_matrix, combine_binned_vector
 export combine_and_relabel_binned_matrix
 export unary_of_matrix
@@ -106,16 +106,8 @@ function entropy(data::Vector{Int64}; base=2, mode="emperical", pseudocount=0)
   r
 end
 
-function bin_value(v::Float64, min::Float64, max::Float64, bins::Int64)
-  f = maximum([minimum([1.0, (v-min) / (max - min)]), 0.0])
-  g = maximum([f * bins, 1.0])
-  int64(g)
-end
-
-function bin_vector(vec::Vector{Float64}, min::Float64, max::Float64, bins::Int64)
-  bf(v::Float64) = bin_value(v, min, max, bins)
-  map(bf, vec)
-end
+bin_value(v::Float64, bins::Int64, min=-1.0, max=1.0)                     = int64(maximum([maximum([minimum([1.0, (v-min) / (max - min)]), 0.0]) * bins, 1.0]))
+bin_vector(vec::Vector{Float64}, min::Float64, max::Float64, bins::Int64) = map(v->bin_value(v, bins, min, max), vec)
 
 function bin_matrix(m::Matrix{Float64}, min::Float64, max::Float64, bins::Int64)
   r = zeros(size(m))
