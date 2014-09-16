@@ -78,3 +78,38 @@ r = [1, 1 + 2 * 4^1, 1 + 2*4^1 + 3*4^2, 1 + 2*4^1 + 3*4^2 + 4*4^3]
 # test basic functions - bin a matrix
 @test [[1, 2, 3] [4, 5, 6] [7, 8, 9]] == bin_matrix([[-1.0, -0.7, -0.5] [-0.3, -0.1, 0.1] [0.3, 0.5, 0.7]], -1.0, 1.0, 10)
 @test [[2, 2, 3] [4, 5, 6] [7, 8, 9]] != bin_matrix([[-1.0, -0.7, -0.5] [-0.3, -0.1, 0.1] [0.3, 0.5, 0.7]], -1.0, 1.0, 10)
+
+# test inverse binning
+@test abs(-1.0 - unbin_value(1,  10, -1.0, 1.0, mode="lower")) < 0.0001
+@test abs(-0.8 - unbin_value(2,  10, -1.0, 1.0, mode="lower")) < 0.0001
+@test abs(-0.6 - unbin_value(3,  10, -1.0, 1.0, mode="lower")) < 0.0001
+@test abs(-0.4 - unbin_value(4,  10, -1.0, 1.0, mode="lower")) < 0.0001
+@test abs(-0.2 - unbin_value(5,  10, -1.0, 1.0, mode="lower")) < 0.0001
+@test abs( 0.0 - unbin_value(6,  10, -1.0, 1.0, mode="lower")) < 0.0001
+@test abs( 0.2 - unbin_value(7,  10, -1.0, 1.0, mode="lower")) < 0.0001
+@test abs( 0.4 - unbin_value(8,  10, -1.0, 1.0, mode="lower")) < 0.0001
+@test abs( 0.6 - unbin_value(9,  10, -1.0, 1.0, mode="lower")) < 0.0001
+@test abs( 0.8 - unbin_value(10, 10, -1.0, 1.0, mode="lower")) < 0.0001
+
+@test abs(-0.8 - unbin_value(1,  10, -1.0, 1.0, mode="upper")) < 0.0001
+@test abs(-0.6 - unbin_value(2,  10, -1.0, 1.0, mode="upper")) < 0.0001
+@test abs(-0.4 - unbin_value(3,  10, -1.0, 1.0, mode="upper")) < 0.0001
+@test abs(-0.2 - unbin_value(4,  10, -1.0, 1.0, mode="upper")) < 0.0001
+@test abs(-0.0 - unbin_value(5,  10, -1.0, 1.0, mode="upper")) < 0.0001
+@test abs( 0.2 - unbin_value(6,  10, -1.0, 1.0, mode="upper")) < 0.0001
+@test abs( 0.4 - unbin_value(7,  10, -1.0, 1.0, mode="upper")) < 0.0001
+@test abs( 0.6 - unbin_value(8,  10, -1.0, 1.0, mode="upper")) < 0.0001
+@test abs( 0.8 - unbin_value(9,  10, -1.0, 1.0, mode="upper")) < 0.0001
+@test abs( 1.0 - unbin_value(10, 10, -1.0, 1.0, mode="upper")) < 0.0001
+
+@test abs(-0.9 - unbin_value(1,  10, -1.0, 1.0, mode="centre")) < 0.0001
+@test abs(-0.7 - unbin_value(2,  10, -1.0, 1.0, mode="centre")) < 0.0001
+@test abs(-0.5 - unbin_value(3,  10, -1.0, 1.0, mode="centre")) < 0.0001
+@test abs(-0.3 - unbin_value(4,  10, -1.0, 1.0, mode="centre")) < 0.0001
+@test abs(-0.1 - unbin_value(5,  10, -1.0, 1.0, mode="centre")) < 0.0001
+@test abs( 0.1 - unbin_value(6,  10, -1.0, 1.0, mode="centre")) < 0.0001
+@test abs( 0.3 - unbin_value(7,  10, -1.0, 1.0, mode="centre")) < 0.0001
+@test abs( 0.5 - unbin_value(8,  10, -1.0, 1.0, mode="centre")) < 0.0001
+@test abs( 0.7 - unbin_value(9,  10, -1.0, 1.0, mode="centre")) < 0.0001
+@test abs( 0.9 - unbin_value(10, 10, -1.0, 1.0, mode="centre")) < 0.0001
+
