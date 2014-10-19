@@ -38,16 +38,6 @@ r = [1, 1 + 2 * 4^1, 1 + 2*4^1 + 3*4^2, 1 + 2*4^1 + 3*4^2 + 4*4^3]
 @test abs(log(2,6) - entropy([1,2,3,4,5,6])) < 0.0000001
 @test abs(log(4,6) - entropy([1,2,3,4,5,6], base=4)) < 0.0000001
 
-@test abs(5.540741 - entropy([1,2,3,4,5,6], mode="ChaoShen")) < 0.00001
-@test abs(5.540741 - entropy([1,2,3,4,5,6], mode="ChaoShen", base=2)) < 0.00001
-@test abs(1.667929 - entropy([1,2,3,4,5,6], mode="ChaoShen", base=10)) < 0.00001
-@test abs(3.840549 - entropy([1,2,3,4,5,6], mode="ChaoShen", base=e)) < 0.00001
-
-@test abs(1.632631 - entropy([1,2,2,3,3,3,4,4,4,4,5,6], mode="Dirichlet", pseudocount=0,base=e)) < 0.00001
-@test abs(2.355389 - entropy([1,2,2,3,3,3,4,4,4,4,5,6], mode="Dirichlet", pseudocount=0)) < 0.00001
-
-@test abs(2.208426 - entropy([1,2,3,4,5,6], mode="MillerMadow", base=e)) < 0.00001
-
 # test basic functions - bin a value
 @test 1  == bin_value(-1.0, 10)
 @test 1  == bin_value(-0.9, 10)
