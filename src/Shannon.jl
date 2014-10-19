@@ -1,9 +1,5 @@
 module Shannon
 
-# The entropy functions (ChaoShen, Dirichlet, MillerMadow) were copied from the
-# R package "entropy", by Jean Hausser and Korbinian Strimmer. For details, see
-# http://cran.r-project.org/web/packages/entropy/index.html
-
 using StatsBase
 
 export KL, PI, MI, entropy
@@ -43,71 +39,15 @@ end
 
 entropy_emperical(p::Vector{Float64}, base::Number) = sum([ p[x] > 0 ? (-p[x] * log(base, p[x])) : 0 for x=1:size(p)[1]])
 
-function entropy_chaoshen(data::Vector{Int64}, base::Number)
-  c = counts(data, 1:maximum(data))
-  n = sum(c)
-  p = c ./ n
-  s = sum(p)
-  p = p ./ s # to be sure
-
-  # code copied form R entropy package
-  f1 = sum([i == 1? 1 : 0 for i in c]) # number of singletons
-  if (f1 == n)
-    f1 = n-1                # avoid C=0
-  end
-
-  C  = 1 - f1/n              # estimated coverage
-  pa = C .* p                # coverage adjusted empirical frequencies
-  la = (1-(1-pa).^n)         # probability to see a bin (species) in the sample
-  #= -sum(pa.*log(base, pa)./la) # Chao-Shen (2003) entropy estimator =#
-  r = 0
-  for i=1:length(pa)
-    if pa[i] != 0
-      r -= pa[i] * log(base, pa[i]) / la[i]
-    end
-  end
-  r
-end
-
-function entropy_millermadow(data::Vector{Int64}, base::Number)
-  c = counts(data, 1:maximum(data))
-  n = sum(c)                         # total number of counts
-  m = sum([i > 0? 1 : 0 for i in c]) # number of bins with non-zero counts
-  p = c ./ n
-  s = sum(p)
-  p = p ./ s
-
-  # bias-corrected empirical estimate
-  entropy_emperical(p, base) + (m-1)/(2*n)
-end
-
 function entropy(data::Vector{Int64}; base=2, mode="emperical", pseudocount=0)
-  known_mode = (mode == "emperical" ||
-                mode == "ChaoShen"  ||
-                mode == "Dirichlet" ||
-                mode == "MillerMadow")
-  @assert known_mode "Mode may be any of the following: [\"emperical\", \"ChaoShen\", \"Dirichlet\", \"MillerMadow\"]"
-
-  p = []
-
-  r = nothing
-
-  if     mode == "emperical"
-    p = fe1p(data)
-    r = entropy_emperical(p, base) 
-  elseif mode == "ChaoShen"
-    r = entropy_chaoshen(data, base)
-  elseif mode == "Dirichlet"
-    p = fe1pd(data, pseudocount)
-    r = entropy_emperical(p, base)
-  elseif mode == "MillerMadow"
-    r = entropy_millermadow(data, base)
-  #= else =# # Not needed. Caught by assertion
-  end
-  r
+  known_mode = (mode == "emperical") 
+  @assert known_mode "Mode may be any of the following: [\"emperical\"]."
+  p = fe1p(data)
+  entropy_emperical(p, base) 
 end
 
-bin_value(v::Float64, bins::Int64, min=-1.0, max=1.0)                     = int64(maximum([maximum([minimum([1.0, (v-min) / (max - min)]), 0.0]) * bins, 1.0]))
+bin_value(v::Float64, bins::Int64, min=-1.0, max=1.0) = int64(maximum([maximum([minimum([1.0, (v-min) / (max - min)]), 0.0]) * bins, 1.0]))
+
 bin_vector(vec::Vector{Float64}, min::Float64, max::Float64, bins::Int64) = map(v->bin_value(v, bins, min, max), vec)
 
 unbin_vector(vec::Vector{Float64}, min::Float64, max::Float64, bins::Int64; mode="centre") = map(v->unbin_value(v, bins, min, max, mode=mode), vec)
@@ -190,15 +130,6 @@ function fe1p(v::Vector{Int64})
   r = r ./ l
   # just to get rid of the numerical inaccuracies and make sure its a probability distribution
   s = sum(r)
-  r ./ s
-end
-
-function fe1pd(v::Vector{Int64}, d::Number) # Dirichlet
-  r = counts(v, 1:maximum(v))
-  r = r .+ d
-  l = sum(r)
-  r = r ./ l
-  s = sum(r) # just to be sure
   r ./ s
 end
 
