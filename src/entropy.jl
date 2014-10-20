@@ -2,27 +2,64 @@ include("distribution.jl")
 
 export entropy
 
-function entropy_emperical(data::Vector{Int64}, base::Number)
+function entropy_ML(data::Vector{Int64}, base::Number)
   p = fe1p(data)
-  sum([ p[x] > 0 ? (-p[x] * log(base, p[x])) : 0 for x=1:size(p)[1]])
+  return -sum([ p[x] > 0 ? (p[x] * log(base, p[x])) : 0 for x=1:size(p)[1]])
 end
 
-#= function entropy_chaoshen(p::Vector{Int64}, base::Number) =#
-  #= p = fe1p(data) =#
-  #= sum([ p[x] > 0 ? (-p[x] * log(base, p[x])) : 0 for x=1:size(p)[1]]) =#
-#= end =#
-
-function entropy(data::Vector{Int64}; base=2, mode="emperical", pseudocount=0)
-  known_mode = (mode == "emperical")
-  @assert known_mode "Mode may be any of the following: [\"emperical\"]."
-  entropy_emperical(data, base) 
-
-  #= known_mode = (mode == "emperical" || mode == "ChaoShen")  =#
-  #= @assert known_mode "Mode may be any of the following: [\"emperical\", \"ChaoShen\"]." =#
-
-  #= if mode == "emperical" =#
-    #= entropy_emperical(data, base)  =#
-  #= elseif mode == "ChaoShen" =#
-    #= entropy_chaoshen(data, base) =#
-  #= end =#
+# implemented from [1] (see below)
+function entropy_MLBC(data::Vector{Int64}, base::Number)
+  p = fe1p(data)
+  n = float(size(data)[1])
+  S = float(size(p)[1])
+  H = -sum([ p[x] > 0 ? (p[x] * log(base, p[x])) : 0 for x=1:size(p)[1]])
+  return H - (S-1) / (2.0 * n)
 end
+
+# implemented from [1] (see below)
+function entropy_HT(data::Vector{Int64}, base::Number)
+  p = fe1p(data)
+  n = size(data)[1]
+  return -sum([ p[x] > 0 ? ((p[x] * log(base, p[x])) / (1.0 - ((1.0 - p[x])^n))) : 0 for x=1:size(p)[1]])
+end
+
+# implemented from [1] (see below)
+function entropy_CS(data::Vector{Int64}, base::Number)
+  m = maximum(v)
+  n  = size(v)[1]
+  c  = counts(v, 1:m)
+  c = c ./ n
+  # just to get rid of the numerical inaccuracies and make sure its a probability distribution
+  s = sum(c)
+  p = c ./ s
+  C = 1.0 - float(sum(filter(x == 1, c))) / float(n)
+  p = p .* C
+  return -sum([ p[x] > 0 ? ((p[x] * log(base, p[x])) / (1.0 - ((1.0 - p[x])^l))) : 0 for x=1:size(p)[1]])
+end
+
+function entropy(data::Vector{Int64}; base=2, mode="ML", pseudocount=0)
+  modes  = ["ML", "Maximum Likelihood", 
+            "MLBC", "Maximum Likelihood with Bias Compensation",
+            "Horovitz-Thomsom", "HT",
+            "ChaoShen", "Chao-Shen", "CS"]
+  umodes = map(x->uppercase(x), modes)
+  known_mode = uppercase(mode) in umodes
+  pmodes = map(x->", $x",modes)
+  pmodes = foldl(*, pmodes[1][3:end], pmodes[2:end])
+  @assert known_mode "Mode may be any of the following: [$pmodes]."
+
+  if uppercase(mode) in umodes[1:2]
+    entropy_ML(data, base) 
+  elseif uppercase(mode) in umodes[3:4]
+    entropy_MLBC(data, base)
+  elseif uppercase(mode) in umodes[5:6]
+    entropy_HT(data, base)
+  elseif uppercase(mode) in umodes[7:9]
+    entropy_CS(data, base)
+  end
+
+end
+
+
+# [1] A. Chao and T.-J. Shen. Nonparametric estimation of shannon’s index of diversity when there are unseen species in sample. Environmental and Ecological Statistics, 10(4):429–443, 2003.
+
