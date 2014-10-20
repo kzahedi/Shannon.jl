@@ -34,9 +34,16 @@ r = [1, 1 + 2 * 4^1, 1 + 2*4^1 + 3*4^2, 1 + 2*4^1 + 3*4^2 + 4*4^3]
 
 @test r    == combine_binned_matrix(c)
 
+# entropy tests
 @test 0           == entropy([1,1,1,1,1])
 @test abs(log(2,6) - entropy([1,2,3,4,5,6])) < 0.0000001
 @test abs(log(4,6) - entropy([1,2,3,4,5,6], base=4)) < 0.0000001
+
+#= @test abs(5.540741 - entropy([1,2,3,4,5,6], mode="ChaoShen")) < 0.00001 =#
+#= @test abs(5.540741 - entropy([1,2,3,4,5,6], mode="ChaoShen", base=2)) < 0.00001 =#
+#= @test abs(1.667929 - entropy([1,2,3,4,5,6], mode="ChaoShen", base=10)) < 0.00001 =#
+#= @test abs(3.840549 - entropy([1,2,3,4,5,6], mode="ChaoShen", base=e)) < 0.00001 =#
+
 
 # test basic functions - bin a value
 @test 1  == bin_value(-1.0, 10)

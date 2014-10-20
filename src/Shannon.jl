@@ -2,7 +2,14 @@ module Shannon
 
 using StatsBase
 
-export KL, PI, MI, entropy
+include("distribution.jl")
+include("entropy.jl")
+include("binning.jl")
+
+export KL, PI, MI
+
+export entropy
+
 export bin_vector, bin_matrix, bin_value
 export unbin_value, unbin_matrix, unbin_vector 
 export combine_binned_matrix, combine_binned_vector
@@ -15,122 +22,5 @@ function KL(p::Vector{Float64}, q::Vector{Float64}; base=2)
   sum([ (p[i] != 0 && q[i] != 0)? p[i] * log(base, p[i]/q[i]) : 0 for i=1:length(p)])
 end
 
-# predictive information
-PI(data::Vector{Int64}; base=2, mode="emperical") = MI(hcat(data[1:end-1], data[2:end]), base=base, mode=mode)
-
-# mutual information
-function MI(data::Matrix{Int64}; base=2, mode="emperical", pseudocount=0)
-
-  max = maximum(data)
-  px  = fe1p(data[:,1])
-  py  = fe1p(data[:,2])
-  pxy = fe2p(hcat(data[:,[1:2]]))
-
-  r = 0
-  for x=1:length(px)
-    for y=1:length(py)
-      if px[x] != 0.0 && py[y] != 0.0 && pxy[x,y] > 0.0
-        r = r + pxy[x,y] * (log(base, pxy[x,y]) - log(base, px[x]*py[y]))
-      end
-    end
-  end
-  r
-end
-
-entropy_emperical(p::Vector{Float64}, base::Number) = sum([ p[x] > 0 ? (-p[x] * log(base, p[x])) : 0 for x=1:size(p)[1]])
-
-function entropy(data::Vector{Int64}; base=2, mode="emperical", pseudocount=0)
-  known_mode = (mode == "emperical") 
-  @assert known_mode "Mode may be any of the following: [\"emperical\"]."
-  p = fe1p(data)
-  entropy_emperical(p, base) 
-end
-
-bin_value(v::Float64, bins::Int64, min=-1.0, max=1.0) = int64(maximum([maximum([minimum([1.0, (v-min) / (max - min)]), 0.0]) * bins, 1.0]))
-
-bin_vector(vec::Vector{Float64}, min::Float64, max::Float64, bins::Int64) = map(v->bin_value(v, bins, min, max), vec)
-
-unbin_vector(vec::Vector{Float64}, min::Float64, max::Float64, bins::Int64; mode="centre") = map(v->unbin_value(v, bins, min, max, mode=mode), vec)
-
-function unbin_value(v::Int64, bins::Int64, min=-1.0, max=1.0; mode="centre")
-  known_mode = (mode == "centre" ||
-                mode == "lower"  ||
-                mode == "upper")
-  @assert known_mode "Mode may be any of the following: [\"centre\", \"lower\", \"upper\"]"
-
-  delta = (max - min) / float64(bins)
-  u = (v - 1) * delta + min
-
-  if     mode == "centre"
-    return u + 0.5 * delta
-  elseif mode == "upper"
-    return u + delta
-  end
-  return u
-end
-
-function bin_matrix(m::Matrix{Float64}, min::Float64, max::Float64, bins::Int64)
-  r = zeros(size(m))
-  for i=1:size(m)[1]
-    r[i,:] = bin_vector(squeeze(m[i,:],1), min, max, bins)
-  end
-  convert(Matrix{Int64}, r)
-end
-
-function unbin_matrix(m::Matrix{Float64}, min::Float64, max::Float64, bins::Int64; mode="centre")
-  r = zeros(size(m))
-  for i=1:size(m)[1]
-    r[i,:] = unbin_vector(squeeze(m[i,:],1), min, max, bins, mode=mode)
-  end
-  convert(Matrix{Int64}, r)
-end
-
-function combine_binned_vector(v::Vector{Int64}, bins::Int64)
-  r = 0
-  for i = 1:length(v)
-    r += v[i] * bins^(i-1)
-  end
-  convert(Int64, r)
-end
-
-function combine_binned_matrix(v::Matrix{Int64})
-  l = size(v)[1]
-  r = zeros(l)
-  m = maximum(v)
-  for i = 1:l
-    r[i] = combine_binned_vector(squeeze(v[i,:],1), m)
-  end
-  convert(Vector{Int64}, r)
-end
-
-relabel(v::Vector{Int64}) = indexin(v, unique(v))
-
-combine_and_relabel_binned_matrix(data::Matrix{Int64}) = relabel(combine_binned_matrix(data))
-
-unary_of_matrix(data::Matrix{Float64}, min::Float64, max::Float64, bins::Int64) = combine_and_relabel_binned_matrix(bin_matrix(data, min, max, bins))
-
-fe1ph(v::Vector{Int64})   = hist(v)[2] ./ size(v)[1]
-
-function fe2p(v::Matrix{Int64}) # frequency estimation of one dimensional probability
-  m1 = maximum(v[:,1])
-  m2 = maximum(v[:,2])
-  r  = counts(v[:,1], v[:,2], (1:m1, 1:m2))
-  l  = size(v)[1]
-  r = r ./ l
-  # just to get rid of the numerical inaccuracies and make sure its a probability distribution
-  s = sum(r)
-  r ./ s
-end
-
-# frequency estimation of one dimensional probability
-function fe1p(v::Vector{Int64})
-  m = maximum(v)
-  l  = size(v)[1]
-  r  = counts(v, 1:m)
-  r = r ./ l
-  # just to get rid of the numerical inaccuracies and make sure its a probability distribution
-  s = sum(r)
-  r ./ s
-end
 
 end # module
