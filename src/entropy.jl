@@ -13,7 +13,7 @@ function entropy_MLBC(data::Vector{Int64}, base::Number)
   n = float(size(data)[1])
   S = float(size(p)[1])
   H = -sum([ p[x] > 0 ? (p[x] * log(base, p[x])) : 0 for x=1:size(p)[1]])
-  return H - (S-1) / (2.0 * n)
+  return H + (S-1) / (2.0 * n)
 end
 
 # implemented from [1] (see below)
