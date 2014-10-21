@@ -37,10 +37,10 @@ function entropy_CS(data::Vector{Int64}, base::Number)
   return -sum([ p[x] > 0 ? ((p[x] * log(base, p[x])) / (1.0 - ((1.0 - p[x])^l))) : 0 for x=1:size(p)[1]])
 end
 
-function entropy(data::Vector{Int64}; base=2, mode="ML", pseudocount=0)
+function entropy(data::Vector{Int64}; base=2, mode="ML")
   modes  = ["ML", "Maximum Likelihood", 
-            "MLBC", "Maximum Likelihood with Bias Compensation",
-            "Horovitz-Thomsom", "HT",
+            "MLBC", "Maximum Likelihood with Bias Correction",
+            "Horovitz-Thompson", "HT",
             "ChaoShen", "Chao-Shen", "CS"]
   umodes = map(x->uppercase(x), modes)
   known_mode = uppercase(mode) in umodes

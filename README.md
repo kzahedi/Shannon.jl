@@ -1,13 +1,13 @@
 # Shannon.jl
 A collection of quantifications related to Shannon's information theory and methods to discretise data.
 
-### Example
+## Example
 
     using Shannon
     xy = hcat([sin(x) + randn() * .1 for x=0:0.01:2pi], [cos(x) + randn() * .1 for x=0:0.01:2pi])
     bxy = bin_matrix(xy, -1.0, 1.0, 10)
     c=combine_binned_matrix(bxy)
-    c=relabel(c) # remove unused bin from the data vector
+    c=relabel(c)
     H = entropy(c)
     I = MI(bxy)
 
@@ -19,25 +19,59 @@ which is a short cut for the lines below
 
     bxy = bin_matrix(xy, -1.0, 1.0, 10)
     c=combine_binned_matrix(bxy)
-    c=relabel(c) # remove unused bin from the data vector
+    c=relabel(c)
     
 ## Entropy estimators
-The estimators were taken from Jean Hausser's and Korbinian Strimmer's R package _entropy_. For more information about their work, please have a look [here](http://cran.r-project.org/web/packages/entropy/index.html).
+The estimators are implemented from the following list of publications:
 
-    entropy(x,mode="empirical") [ this is the default ]
-    entropy(x,mode="ChaoShen")
-    entropy(x,mode="Dirichlet", pseudocount=10)
-    entropy(x,mode="MillerMadow")
+[1] A. Chao and T.-J. Shen. Nonparametric estimation of shannon’s index of diversity when there are unseen species in sample. Environmental and Ecological Statistics, 10(4):429–443, 2003.
 
-**x** is a of type *Vector{Int64}*
+and the function call is
 
-### Setting the base
+    entropy(data, base=2, mode="ML")
 
-    entropy(x,base=2) [ this is the default ]
-    entropy(x,mode="MillerMadow", base=10)
+where
+
+<table>
+<tr> <td> **data** </td> <td> is the discrete data (*Vector{Int64}*)</td></tr>
+<tr> <td valign=top> **mode** </td> <td> determines which estimator should be used (see below). It is *not* case-sensitive </td> </tr>
+<tr> <td> **base** </td>  <td> determines the base of the logarithm </td> </tr>
+ </table>
+
+###Maximum Likelihood Estimator
+This is the default estimator.
+
+    entropy(data)
+    entropy(data, mode="ML")
+    entropy(data, mode="Maximum Likelihood")
+
+###Maximum Likelihood Estimator with Bias Correction (implemented from [1])
+    
+    entropy(data, mode="MLBC")
+    entropy(data, mode="Maximum Likelihood with Bias Compensation")
+    
+###Horovitz-Thompson Estimator (implemented from [1])
+    
+
+    entropy(data, mode="HT")
+    entropy(data, mode="Horovitz-Thompson")
+
+
+###Chao-Shen Estimator (implemented from [1])
+
+
+    entropy(data, mode="CS")
+    entropy(data, mode="Chao-Shen")
+    entropy(data, mode="ChaoShen")
+
+
+#### Setting the base
+
+    entropy(data, base=2) [ this is the default ]
+    entropy(data, mode="HT", base=10)
     
 ## Mutual Information estimators
-Currently, the _emperical_ estimator is implemented, but different bases can be used:
+Currently, only the _maximum likelihood estimator_ is implemented. It can be used with different bases:
 
     MI(xy, base=2) [ this is the default ]
     MI(xy, base=10)
