@@ -5,6 +5,7 @@ using StatsBase
 include("distribution.jl")
 include("entropy.jl")
 include("binning.jl")
+include("mi.jl")
 
 export KL, PI, MI
 
