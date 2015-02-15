@@ -14,13 +14,13 @@ A collection of quantifications related to Shannon's information theory and meth
 A faster way is to call 
 
     unary_of_matrix(xy, -1.0, 1.0, 10)
-   
+
 which is a short cut for the lines below
 
     bxy = bin_matrix(xy, -1.0, 1.0, 10)
     c=combine_binned_matrix(bxy)
     c=relabel(c)
-    
+
 ## Entropy estimators
 The estimators are implemented from the following list of publications:
 
@@ -46,12 +46,12 @@ This is the default estimator.
     entropy(data, mode="Maximum Likelihood")
 
 ###Maximum Likelihood Estimator with Bias Correction (implemented from [1])
-    
+
     entropy(data, mode="MLBC")
     entropy(data, mode="Maximum Likelihood with Bias Compensation")
-    
+
 ###Horovitz-Thompson Estimator (implemented from [1])
-    
+
 
     entropy(data, mode="HT")
     entropy(data, mode="Horovitz-Thompson")
@@ -69,7 +69,7 @@ This is the default estimator.
 
     entropy(data, base=2) [ this is the default ]
     entropy(data, mode="HT", base=10)
-    
+
 ## Mutual Information estimators
 Currently, only the _maximum likelihood estimator_ is implemented. It can be used with different bases:
 
@@ -83,7 +83,7 @@ This in an implementation of the one-step predictive information, which is given
 
     PI(x) = MI(hcat(x[1:end-1], x[2:end]))
     PI(x,[base],[mode]) = MI(x[1:end-1], x[2:end], base, mode)
-    
+
 ## Kullback-Leibler Divergence
 This function calculates the KL-Divergence on two probability distributions, and is essentially given by:
 

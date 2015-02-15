@@ -67,5 +67,3 @@ relabel(v::Vector{Int64}) = indexin(v, unique(v))
 combine_and_relabel_binned_matrix(data::Matrix{Int64}) = relabel(combine_binned_matrix(data))
 
 unary_of_matrix(data::Matrix{Float64}, min::Float64, max::Float64, bins::Int64) = combine_and_relabel_binned_matrix(bin_matrix(data, min, max, bins))
-
-

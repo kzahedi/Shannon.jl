@@ -49,15 +49,15 @@ function entropy(data::Vector{Int64}; base=2, mode="ML")
   @assert known_mode "Mode may be any of the following: [$pmodes]."
 
   if uppercase(mode) in umodes[1:2]
-    entropy_ML(data, base) 
+    return entropy_ML(data, base) 
   elseif uppercase(mode) in umodes[3:4]
-    entropy_MLBC(data, base)
+    return entropy_MLBC(data, base)
   elseif uppercase(mode) in umodes[5:6]
-    entropy_HT(data, base)
+    return entropy_HT(data, base)
   elseif uppercase(mode) in umodes[7:9]
-    entropy_CS(data, base)
+    return entropy_CS(data, base)
   end
-
+  return nothing
 end
 
 

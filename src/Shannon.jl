@@ -6,8 +6,9 @@ include("distribution.jl")
 include("entropy.jl")
 include("binning.jl")
 include("mi.jl")
+include("te.jl")
 
-export KL, PI, MI
+export KL, PI, MI, TE
 
 export entropy
 
