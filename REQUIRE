@@ -1,2 +1,2 @@
-julia 0.3-
-StatsBase 0.3.8-
+julia 0.x
+StatsBase 0.x

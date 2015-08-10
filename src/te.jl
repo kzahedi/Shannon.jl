@@ -32,6 +32,6 @@ function TE(data::Matrix{Int64}; base=2, mode="ML", pseudocount=0)
   @assert known_mode "Mode may be any of the following: [$pmodes]."
 
   if uppercase(mode) in umodes[1:2]
-    return TE_ML(data, base) 
+    return TE_ML(data, base)
   end
 end
