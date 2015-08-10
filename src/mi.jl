@@ -1,6 +1,6 @@
 include("distribution.jl")
 
-export MI, PI
+export MI, PI, CMI
 
 ϵ = 0.0000001
 
@@ -58,14 +58,16 @@ end
 # MI(X;Y|Z) = ∑ p(x,y,z) * log( p(x,y|z) / (p(x|z) * p(y|z)))
 function CMI(pxyz::Array{Float64,3}; base=2)
   r = 0
+
   pz  = sum(pxyz, (1,2))
   pxz = sum(pxyz, 2)
   pyz = sum(pxyz, 1)
+
   for x = 1:size(pxyz)[1]
     for y = 1:size(pxyz)[2]
       for z = 1:size(pxyz)[3]
-        if abs(pxyz[x,y,z]) > ϵ && abs(pz[z]) > ϵ && abs(pxz[x,z]) > ϵ && abs(pyz[y,z]) > ϵ
-           r = r + pxyz[x,y,z] * ( log(base, pxyz[x,y,z] / pz[z]) - log(base, pxz[x,z] / pz[z] * pyz[y,z] / pz[z]))
+        if abs(pxyz[x,y,z]) > ϵ && abs(pz[1,1,z]) > ϵ && abs(pxz[x,1,z]) > ϵ && abs(pyz[1,y,z]) > ϵ
+           r = r + pxyz[x,y,z] * ( log(base, pxyz[x,y,z] / pz[1,1,z]) - log(base, pxz[x,1,z] / pz[1,1,z] * pyz[1,y,z] / pz[1,1,z]))
          end
       end
     end

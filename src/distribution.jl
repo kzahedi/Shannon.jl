@@ -31,9 +31,9 @@ function fe3p(data::Matrix{Int64})
   y = data[:,2]
   z = data[:,3]
 
-  mx = maximum(x[:,1])
-  my = maximum(y[:,2])
-  mz = maximum(z[:,3])
+  mx = maximum(x)
+  my = maximum(y)
+  mz = maximum(z)
 
   p  = zeros(mx, my, mz)
   for index = 1:length(x)
