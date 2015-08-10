@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/kzahedi/Shannon.jl.svg?branch=master)](https://travis-ci.org/kzahedi/Shannon.jl)
 # Shannon.jl
 A collection of quantifications related to Shannon's information theory and methods to discretise data.
 
