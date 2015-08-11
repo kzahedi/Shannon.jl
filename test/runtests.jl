@@ -1,8 +1,8 @@
 using Shannon
 using Base.Test
 
-v = [0:10] / 10
-r = [1,1:10]
+v = [0:10] ./ 10
+r = vcat(1,1:10)
 
 @test r == bin_vector(v, 0.0, 1.0, 10)
 

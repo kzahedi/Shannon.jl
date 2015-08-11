@@ -1,5 +1,3 @@
-export fe1ph, fe2p, fe1p
-
 fe1ph(v::Vector{Int64})   = hist(v)[2] ./ size(v)[1]
 
 function fe2p(v::Matrix{Int64}) # frequency estimation of one dimensional probability

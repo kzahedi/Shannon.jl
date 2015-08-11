@@ -7,13 +7,14 @@ include("entropy.jl")
 include("binning.jl")
 include("mi.jl")
 include("te.jl")
+include("mc.jl")
 
-export KL, PI, MI, TE
+export KL, PI, MI, TE, MC
 
 export entropy
 
 export bin_vector, bin_matrix, bin_value
-export unbin_value, unbin_matrix, unbin_vector 
+export unbin_value, unbin_matrix, unbin_vector
 export combine_binned_matrix, combine_binned_vector
 export combine_and_relabel_binned_matrix
 export unary_of_matrix
