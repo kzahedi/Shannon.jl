@@ -1,38 +1,38 @@
 include("distribution.jl")
+include("const.jl")
 
-ϵ = 0.0000001
 
 # data[w', w, a] -> |MI(W';W|A)|
-function MC_W(data::Matrix{Int64}; base=2)
+function MC_W(data::Matrix{Int64}, w_cardinality::Int64; base=2)
   @assert (size(data)[2] == 2) "MC_W required two columns (W,A)."
   w2      = data[2:end,1]
   w1      = data[1:end-1,1]
   a1      = data[1:end-1,2]
-  m       = maximum(data[:,1])
   pw2w1a1 = fe3p(hcat(w2,w1,a1)) # add possibility to use other estimators
-  return CMI(pw2w1a1, base=base) / log(base,m)
+  return CMI(pw2w1a1, base=base) / log(base, w_cardinality) # |MI(W';W|A)|
 end
 
 # data[w', w, a] -> 1 - |MI(W';A|W)|
-function MC_A(data::Matrix{Int64}; base=2)
+function MC_A(data::Matrix{Int64}, w_cardinality::Int64; base=2)
   @assert (size(data)[2] == 2) "MC_W required two columns (W,A)."
   w2      = data[2:end,1]
   w1      = data[1:end-1,1]
   a1      = data[1:end-1,2]
-  m       = maximum(data[:,1])
   pw2a1w1 = fe3p(hcat(w2,a1,w1)) # add possibility to use other estimators
-  return 1.0 - (CMI(pw2a1w1, base=base) / log(base,m))
+  return 1.0 - CMI(pw2a1w1, base=base)/log(base, w_cardinality) # 1.0 - |MI(W';A|W)|
 end
 
 # CA = ∑ p(s,a) p(s'|do(a)) log (p(s'|do(a)) / p(s'|do(s)))
-function C_A(data::Matrix{Int64}; base=2)
+function C_A(data::Matrix{Int64}, s_cardinality::Int64; base=2)
   @assert (size(data)[2] == 2) "C_A required two columns (S,A)."
+
   s_max   = maximum(data[:,1])
   a_max   = maximum(data[:,2])
+
   s2      = data[2:end,1]
   s1      = data[1:end-1,1]
   a1      = data[1:end-1,2]
-  m       = maximum(data[:,1])
+
   ps2s1a1 = fe3p(hcat(s2,s1,a1)) # add possibility to use other estimators
 
   ps1a1   = sum(ps2s1a1, 1)
@@ -93,18 +93,17 @@ function C_A(data::Matrix{Int64}; base=2)
       end
     end
   end
-  return r / log(base, s_max)
+  return r / log(base, s_cardinality)
 end
 
 # data[s', s, a] -> D_KL(p(s'|s,a)||p(s'|a))
-function C_W(data::Matrix{Int64}; base=2)
+function C_W(data::Matrix{Int64}, s_cardinality::Int64; base=2)
   @assert (size(data)[2] == 2) "C_A required two columns (S,A)."
   s_max   = maximum(data[:,1])
   a_max   = maximum(data[:,2])
   s2      = data[2:end,1]
   s1      = data[1:end-1,1]
   a1      = data[1:end-1,2]
-  m       = maximum(data[:,1])
   ps2s1a1 = fe3p(hcat(s2,s1,a1)) # add possibility to use other estimators
 
   ps1     = sum(ps2s1a1, (1,3))
@@ -153,6 +152,7 @@ function C_W(data::Matrix{Int64}; base=2)
     end
   end
 
+  # C_W = ∑ p(s',s) log p(s'|s) / phat(s'|s)
   r = 0
   for s1_index = 1:s_max
     for s2_index = 1:s_max
@@ -162,7 +162,7 @@ function C_W(data::Matrix{Int64}; base=2)
     end
   end
 
-  return r / log(base, s_max)
+  return r / log(base, s_cardinality)
 end
 
 # Morphological Computation

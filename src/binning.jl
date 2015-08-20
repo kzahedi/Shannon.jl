@@ -5,7 +5,7 @@ export combine_and_relabel_binned_matrix
 export unary_of_matrix
 export relabel
 
-bin_value(v::Float64, bins::Int64, min=-1.0, max=1.0) = int64(maximum([maximum([minimum([1.0, (v-min) / (max - min)]), 0.0]) * bins, 1.0]))
+bin_value(v::Float64, bins::Int64, min=-1.0, max=1.0) = int64(minimum([bins, (1.0 + floor((v - min) / (max - min) * bins))]))
 
 bin_vector(vec::Vector{Float64}, min::Float64, max::Float64, bins::Int64) = map(v->bin_value(v, bins, min, max), vec)
 
@@ -45,11 +45,7 @@ function unbin_matrix(m::Matrix{Float64}, min::Float64, max::Float64, bins::Int6
 end
 
 function combine_binned_vector(v::Vector{Int64}, bins::Int64)
-  r = 0
-  for i = 1:length(v)
-    r += v[i] * bins^(i-1)
-  end
-  convert(Int64, r)
+  convert(Int64, sum([v[i] * bins^(i-1) for i = 1:length(v)]))
 end
 
 function combine_binned_matrix(v::Matrix{Int64})
@@ -62,7 +58,7 @@ function combine_binned_matrix(v::Matrix{Int64})
   convert(Vector{Int64}, r)
 end
 
-relabel(v::Vector{Int64}) = indexin(v, unique(v))
+relabel(v::Vector{Int64}) = indexin(v, sort(unique(v)))
 
 combine_and_relabel_binned_matrix(data::Matrix{Int64}) = relabel(combine_binned_matrix(data))
 
