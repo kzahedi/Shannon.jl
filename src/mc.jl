@@ -1,9 +1,8 @@
 include("distribution.jl")
 include("const.jl")
 
-
 # data[w', w, a] -> |MI(W';W|A)|
-function MC_W(data::Matrix{Int64}, w_cardinality::Int64; base=2)
+function MC_W_CMI(data::Matrix{Int64}, w_cardinality::Int64; base=2)
   @assert (size(data)[2] == 2) "MC_W required two columns (W,A)."
   w2      = data[2:end,1]
   w1      = data[1:end-1,1]
@@ -13,13 +12,125 @@ function MC_W(data::Matrix{Int64}, w_cardinality::Int64; base=2)
 end
 
 # data[w', w, a] -> 1 - |MI(W';A|W)|
-function MC_A(data::Matrix{Int64}, w_cardinality::Int64; base=2)
+function MC_A_CMI(data::Matrix{Int64}, w_cardinality::Int64; base=2)
   @assert (size(data)[2] == 2) "MC_W required two columns (W,A)."
   w2      = data[2:end,1]
   w1      = data[1:end-1,1]
   a1      = data[1:end-1,2]
   pw2a1w1 = fe3p(hcat(w2,a1,w1)) # add possibility to use other estimators
   return 1.0 - CMI(pw2a1w1, base=base)/log(base, w_cardinality) # 1.0 - |MI(W';A|W)|
+end
+
+
+
+# data[w', w, a] -> |MI(W';W|A)|
+function MC_W(data::Matrix{Int64}, w_cardinality::Int64; base=2)
+  @assert (size(data)[2] == 2) "MC_W required two columns (W,A)."
+
+  w2         = data[2:end,1]
+  w1         = data[1:end-1,1]
+  a1         = data[1:end-1,2]
+
+  w2_max     = maximum(w2);
+  w1_max     = maximum(w1);
+  a1_max     = maximum(a1);
+
+  pw2w1a1    = fe3p(hcat(w2,w1,a1)) # add possibility to use other estimators
+  pw1a1      = sum(pw2w1a1, 1)
+  pw2a1      = sum(pw2w1a1, 2)
+  pa1        = sum(pw1a1,   2)
+
+  pw2_c_a1   = zeros(w2_max, a1_max);
+  pw2_c_w1a1 = zeros(w2_max, w1_max, a1_max);
+
+  for w2_index = 1:w2_max
+    for a1_index = 1:a1_max
+      if pa1[1,1,a1_index] > 0.0
+        pw2_c_a1[w2_index, a1_index] = pw2a1[w2_index, 1, a1_index] / pa1[1, 1, a1_index]
+      end
+    end
+  end
+
+  for w2_index = 1:w2_max
+    for w1_index = 1:w1_max
+      for a1_index = 1:a1_max
+        pw2_c_w1a1[w2_index, w1_index, a1_index] = 0.0
+        if pw2a1[w2_index, 1, a1_index] > 0.0
+          pw2_c_w1a1[w2_index, w1_index, a1_index] = pw2w1a1[w2_index, w1_index, a1_index] / pw2a1[w2_index, 1, a1_index]
+        end
+      end
+    end
+  end
+
+  r = 0.0
+  for w2_index = 1:w2_max
+    for w1_index = 1:w1_max
+      for a1_index = 1:a1_max
+        if pw2w1a1[w2_index, w1_index, a1_index]    > 0.0 &&
+           pw2_c_w1a1[w2_index, w1_index, a1_index] > 0.0 &&
+           pw2_c_a1[w2_index, a1_index]          > 0.0
+          r = r + pw2w1a1[w2_index, w1_index, a1_index] * (log(base, pw2_c_w1a1[w2_index, w1_index, a1_index]) - log(base, pw2_c_a1[w2_index, a1_index]))
+        end
+      end
+    end
+  end
+
+  return r / log(base, w_cardinality) # |MI(W';W|A)|
+end
+
+# data[w', w, a] -> 1 - |MI(W';A|W)|
+# D(p(w'|w,a) || p(w'|w))
+function MC_A(data::Matrix{Int64}, w_cardinality::Int64; base=2)
+  @assert (size(data)[2] == 2) "MC_W required two columns (W,A)."
+
+  w2         = data[2:end,1]
+  w1         = data[1:end-1,1]
+  a1         = data[1:end-1,2]
+
+  w2_max     = maximum(w2);
+  w1_max     = maximum(w1);
+  a1_max     = maximum(a1);
+
+  pw2w1a1    = fe3p(hcat(w2,w1,a1)) # add possibility to use other estimators
+  pw1a1      = sum(pw2w1a1, 1)
+  pw2w1      = sum(pw2w1a1, 3)
+  pw1        = sum(pw1a1,   3)
+
+  pw2_c_w1   = zeros(w2_max, w1_max);
+  pw2_c_w1a1 = zeros(w2_max, w1_max, a1_max);
+
+  for w2_index = 1:w2_max
+    for w1_index = 1:a1_max
+      if pw1[1,w1_index,1] > 0.0
+        pw2_c_w1[w2_index, w1_index] = pw2w1[w2_index, w1_index, 1] / pw1[1, w1_index, 1]
+      end
+    end
+  end
+
+  for w2_index = 1:w2_max
+    for w1_index = 1:w1_max
+      for a1_index = 1:a1_max
+        if pw1a1[1, w1_index, a1_index] > 0.0
+          pw2_c_w1a1[w2_index, w1_index, a1_index] = pw2w1a1[w2_index, w1_index, a1_index] / pw1a1[1, w1_index, a1_index]
+        end
+      end
+    end
+  end
+
+  r = 0.0
+  for w2_index = 1:w2_max
+    for w1_index = 1:w1_max
+      for a1_index = 1:a1_max
+        if pw2w1a1[w2_index, w1_index, a1_index]   > 0.0 &&
+          pw2_c_w1a1[w2_index, w1_index, a1_index] > 0.0 &&
+          pw2_c_w1[w2_index, w1_index, 1]          > 0.0
+          r = r + pw2w1a1[w2_index, w1_index, a1_index] * (log(base, pw2_c_w1a1[w2_index, w1_index, a1_index]) - log(base, pw2_c_w1[w2_index, w1_index]))
+        end
+      end
+    end
+  end
+
+  return 1.0 - r/log(base, w_cardinality) # 1.0 - |MI(W';A|W)|
 end
 
 # CA = ∑ p(s,a) p(s'|do(a)) log (p(s'|do(a)) / p(s'|do(s)))
