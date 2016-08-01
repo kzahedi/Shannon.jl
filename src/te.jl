@@ -34,24 +34,25 @@ function TE_ML(data::Matrix{Int64}; base=2) # D_KL(p(x|y,z)||p(x|y))
       for y1_index = 1:y_max
         if abs(px2x1y1[x2_index, x1_index, y1_index]) > ϵ && abs(px2_c_x1y1[x2_index, x1_index, y1_index]) > ϵ && abs(px2_c_x1[x2_index, x1_index]) > ϵ
           r = r + px2x1y1[x2_index, x1_index, y1_index] * (log(base, px2_c_x1y1[x2_index, x1_index, y1_index]) - log(base, px2_c_x1[x2_index, x1_index]))
+        end
       end
     end
   end
   return r
 end
 
-# Transfer Entropy
-function TE(data::Matrix{Int64}; base=2, mode="ML", pseudocount=0)
-  @assert (size(data)[2] == 2) "TE required two columns (X,Y) to calcualte TE(X->Y)."
+  # Transfer Entropy
+  function TE(data::Matrix{Int64}; base=2, mode="ML", pseudocount=0)
+    @assert (size(data)[2] == 2) "TE required two columns (X,Y) to calcualte TE(X->Y)."
 
-  modes      = ["ML", "Maximum Likelihood"]
-  umodes     = map(x->uppercase(x), modes)
-  known_mode = uppercase(mode) in umodes
-  pmodes     = map(x->", $x",modes)
-  pmodes     = foldl(*, pmodes[1][3:end], pmodes[2:end])
-  @assert known_mode "Mode may be any of the following: [$pmodes]."
+    modes      = ["ML", "Maximum Likelihood"]
+    umodes     = map(x->uppercase(x), modes)
+    known_mode = uppercase(mode) in umodes
+    pmodes     = map(x->", $x",modes)
+    pmodes     = foldl(*, pmodes[1][3:end], pmodes[2:end])
+    @assert known_mode "Mode may be any of the following: [$pmodes]."
 
-  if uppercase(mode) in umodes[1:2]
-    return TE_ML(data, base)
+    if uppercase(mode) in umodes[1:2]
+      return TE_ML(data, base)
+    end
   end
-end

@@ -5,7 +5,7 @@ export combine_and_relabel_binned_matrix
 export unary_of_matrix
 export relabel
 
-bin_value(v::Float64, bins::Int64, min=-1.0, max=1.0) = int64(maximum([maximum([minimum([1.0, (v-min) / (max - min)]), 0.0]) * bins, 1.0]))
+bin_value(v::Float64, bins::Int64, min=-1.0, max=1.0) = round(Int64, minimum([1+floor((v-min) / (max - min) * (bins-0.1)), bins]))
 
 bin_vector(vec::Vector{Float64}, min::Float64, max::Float64, bins::Int64) = map(v->bin_value(v, bins, min, max), vec)
 
@@ -17,7 +17,7 @@ function unbin_value(v::Int64, bins::Int64, min=-1.0, max=1.0; mode="centre")
                 mode == "upper")
   @assert known_mode "Mode may be any of the following: [\"centre\", \"lower\", \"upper\"]"
 
-  delta = (max - min) / float64(bins)
+  delta = (max - min) / Float64(bins)
   u = (v - 1) * delta + min
 
   if     mode == "centre"

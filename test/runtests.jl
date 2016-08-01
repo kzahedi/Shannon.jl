@@ -1,10 +1,9 @@
 using Shannon
 using Base.Test
 
-v = [0:10] ./ 10
-r = vcat(1,1:10)
+v = collect(0:10) ./ 10
 
-@test r == bin_vector(v, 0.0, 1.0, 10)
+@test [1,1,2,3,4,5,6,7,8,9,10] == bin_vector(v, 0.0, 1.0, 10)
 
 r = zeros((10,5))
 i = 1
@@ -19,8 +18,8 @@ r = convert(Matrix{Int64}, r)
 
 @test r == bin_matrix(v, 0.0, 1.0, 50)
 
-c = [[1 0 0 0], [1 2 0 0], [1 2 3 0], [1 2 3 4]]
-r = [1, 1 + 2 * 4^1, 1 + 2*4^1 + 3*4^2, 1 + 2*4^1 + 3*4^2 + 4*4^3]
+c = [[1 0 0 0]; [1 2 0 0]; [1 2 3 0]; [1 2 3 4]]
+r = [1; 1 + 2 * 4^1; 1 + 2*4^1 + 3*4^2; 1 + 2*4^1 + 3*4^2 + 4*4^3]
 
 @test 1    == combine_binned_vector(squeeze(c[1,:],1), 10)
 @test 21   == combine_binned_vector(squeeze(c[2,:],1), 10)
