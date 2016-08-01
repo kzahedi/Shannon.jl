@@ -1,4 +1,5 @@
 include("distribution.jl")
+include("const.jl")
 
 export entropy
 
@@ -12,7 +13,7 @@ function entropy_MLBC(data::Vector{Int64}, base::Number)
   p = fe1p(data)
   n = float(size(data)[1])
   S = float(size(p)[1])
-  H = -sum([ p[x] > 0 ? (p[x] * log(base, p[x])) : 0 for x=1:size(p)[1]])
+  H = -sum([ p[x] > ϵ ? (p[x] * log(base, p[x])) : 0 for x=1:size(p)[1]])
   return H + (S-1) / (2.0 * n)
 end
 
@@ -20,7 +21,7 @@ end
 function entropy_HT(data::Vector{Int64}, base::Number)
   p = fe1p(data)
   n = size(data)[1]
-  return -sum([ p[x] > 0 ? ((p[x] * log(base, p[x])) / (1.0 - ((1.0 - p[x])^n))) : 0 for x=1:size(p)[1]])
+  return -sum([ p[x] > ϵ ? ((p[x] * log(base, p[x])) / (1.0 - ((1.0 - p[x])^n))) : 0 for x=1:size(p)[1]])
 end
 
 # implemented from [1] (see below)
@@ -34,7 +35,7 @@ function entropy_CS(data::Vector{Int64}, base::Number)
   p = c ./ s
   C = 1.0 - float(sum(filter(x == 1, c))) / float(n)
   p = p .* C
-  return -sum([ p[x] > 0 ? ((p[x] * log(base, p[x])) / (1.0 - ((1.0 - p[x])^l))) : 0 for x=1:size(p)[1]])
+  return -sum([ p[x] > ϵ ? ((p[x] * log(base, p[x])) / (1.0 - ((1.0 - p[x])^l))) : 0 for x=1:size(p)[1]])
 end
 
 function entropy(data::Vector{Int64}; base=2, mode="ML")
