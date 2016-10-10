@@ -31,7 +31,7 @@ end
 function bin_matrix(m::Matrix{Float64}, min::Float64, max::Float64, bins::Int64)
   r = zeros(size(m))
   for i=1:size(m)[1]
-    r[i,:] = bin_vector(squeeze(m[i,:],2), min, max, bins)
+    r[i,:] = bin_vector(squeeze(m[i,:],1), min, max, bins)
   end
   convert(Matrix{Int64}, r)
 end
