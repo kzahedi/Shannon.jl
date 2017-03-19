@@ -1,10 +1,11 @@
 include("distribution.jl")
+include("const.jl")
 
 export TE
 
-ϵ = 0.0000001
 
-function TE_ML(data::Matrix{Int64}; base=2) # D_KL(p(x|y,z)||p(x|y))
+# D_KL(p(x|y,z)||p(x|y))
+function TE_ML(data::Matrix{Int64}; base=2)
 
   x2         = data[2:end,1]
   x1         = data[1:end-1,1]
