@@ -24,16 +24,15 @@ function entropy_HT(data::Vector{Int64}, base::Number)
   return -sum([ p[x] > ϵ ? ((p[x] * log(base, p[x])) / (1.0 - ((1.0 - p[x])^n))) : 0 for x=1:size(p)[1]])
 end
 
-# implemented from [1] (see below)
 function entropy_CS(data::Vector{Int64}, base::Number)
-  m = maximum(v)
-  n  = size(v)[1]
-  c  = counts(v, 1:m)
+  m = maximum(data)
+  n  = size(data)[1]
+  c  = counts(data, 1:m)
   c = c ./ n
   # just to get rid of the numerical inaccuracies and make sure its a probability distribution
   s = sum(c)
   p = c ./ s
-  C = 1.0 - float(sum(filter(x == 1, c))) / float(n)
+  C = 1.0 - float(sum(c .== 1)) / float(n)
   p = p .* C
   return -sum([ p[x] > ϵ ? ((p[x] * log(base, p[x])) / (1.0 - ((1.0 - p[x])^l))) : 0 for x=1:size(p)[1]])
 end
